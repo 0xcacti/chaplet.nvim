@@ -1,5 +1,3 @@
-require("plenary.test_harness")
-
 describe("chaplet", function()
     it("can be required", function()
         require("chaplet")
