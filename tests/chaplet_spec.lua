@@ -1,3 +1,5 @@
+require("plenary.test_harness")
+
 describe("chaplet", function()
     it("can be required", function()
         require("chaplet")
@@ -6,6 +8,5 @@ describe("chaplet", function()
     it("setup works", function()
         local chaplet = require("chaplet")
         chaplet.setup({})
-        -- Add assertions here
     end)
 end)
