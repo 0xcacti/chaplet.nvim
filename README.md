@@ -4,8 +4,14 @@
   <img alt="Rosary" height = "500" src="/assets/praying-hands-chaplet.jpg" />
 </p>
 
-[![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](http://www.lua.org)
-[![Neovim](https://img.shields.io/badge/Neovim%200.8+-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
+<p align="center">
+  <a href="http://www.lua.org">
+    <img src="https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua" alt="Lua">
+  </a>
+  <a href="https://neovim.io">
+    <img src="https://img.shields.io/badge/Neovim%200.8+-green.svg?style=for-the-badge&logo=neovim" alt="Neovim">
+  </a>
+</p>
 
 
 A simple plugin to display various chaplets either in the status
