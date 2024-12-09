@@ -25,17 +25,25 @@
     - Saint Paul (1 Thessalonians 5:17)
 </p>
 
-chaplet.nvim is a tool created to remind me (and hopefully others) to pray continually throughout the day. 
-It is a simple plugin that designed to provide a gentle reminder to pray the Holy Rosary and other chaplets while you code. 
+
+Chaplet.nvim is inspired by Saint Paul's call to constant prayer. 
+
+The plugin provides a gentle, non-intrusive way to pray traditional Catholic chaplets,
+including the Holy Rosary, Divine Mercy Chaplet, and others, right within your Neovim environment. 
 
 
 ### Installation
-[![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](http://www.lua.org)
-[![Neovim](https://img.shields.io/badge/Neovim%200.8+-green.svg?style=for-the-badge&logo=neovim)](https://neovim.io)
+
+#### Requirementns 
+- This plugin requires Neovim 0.8 or higher
+- nvim-notify
 
 ### Configuration
 
 ### Contributing
 
+Contributions are welcome! Please open a pull request or issue to get started.
+
 ### Local Parish Support
 
+If you find this plugin helpful, please consider supporting your local parish. 
