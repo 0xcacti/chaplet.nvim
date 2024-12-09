@@ -1,15 +1,17 @@
+local M = {}
+
 local utils = require("chaplet.utils")
+local common_prayers = require("chaplet.prayers.common")
+local rosary_prayers = require("chaplet.prayers.rosary")
 
 local function create_decade()
     local decade = { "our_father" }
-    local hail_marys = utils.repeat_prayer("hail_mary", 10)
-    for _, prayer in ipairs(hail_marys) do
-        table.insert(decade, prayer)
+    -- Add 10 Hail Marys
+    for _ = 1, 10 do
+        table.insert(decade, "hail_mary")
     end
-
     table.insert(decade, "glory_be")
     table.insert(decade, "fatima_prayer")
-
     return decade
 end
 
@@ -34,8 +36,16 @@ local function create_order()
     return order
 end
 
+function M.get_prayer_text(prayer_name)
+    local prayer = common_prayers[prayer_name] or rosary_prayers[prayer_name]
+    if not prayer then
+        error("Prayer not found: " .. prayer_name)
+    end
+
+    return prayer
+end
+
 M.rosary = {
-    prayers = prayers,
     order = create_order(),
 }
 
