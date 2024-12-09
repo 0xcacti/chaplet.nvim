@@ -1,5 +1,4 @@
 local config = require("chaplet.config")
-local chaplets = require("chaplet.chaplets")
 
 local M = {}
 
