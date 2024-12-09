@@ -1,6 +1,5 @@
 local utils = require("chaplet.utils")
 
-
 local function create_decade()
     local decade = { "our_father" }
     local hail_marys = utils.repeat_prayer("hail_mary", 10)
