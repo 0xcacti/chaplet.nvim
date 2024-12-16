@@ -1,6 +1,5 @@
 local M = {}
 
-local utils = require("chaplet.utils")
 local common_prayers = require("chaplet.prayers.common")
 local rosary_prayers = require("chaplet.prayers.rosary")
 
