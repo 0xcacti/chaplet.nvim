@@ -44,8 +44,6 @@ function M.get_prayer_text(prayer_name)
     return prayer
 end
 
-M.rosary = {
-    order = create_order(),
-}
+M.order = create_order()
 
 return M

@@ -1,3 +1,4 @@
+local utils = require("chaplet.utils")
 local config = require("chaplet.config")
 local chaplets = require("chaplet.chaplets")
 local M = {}
@@ -14,10 +15,16 @@ function M.start_chaplet(message_type)
         return
     end
 
-    local prayer_order = chaplet[message_type].order
+    local prayer_order = chaplet.order
     if not prayer_order then
-        notify("Chaplet not found: " .. message_type, "error")
+        notify("Chaplet prayers not found: " .. message_type, "error")
         return
+    end
+
+    local timeout = config.display_time
+    local manual_only = config.manual_only
+    if manual_only then
+        timeout = false
     end
 
     local current_win = nil
@@ -28,10 +35,11 @@ function M.start_chaplet(message_type)
         if prayer_index > #prayer_order then
             return
         end
+        local prayer_name = prayer_order[prayer_index]
         local prayer_text = chaplet.get_prayer_text(prayer_name)
         notify(
             {
-                prayer_name,
+                utils.format_prayer_name(prayer_name),
                 string.rep("-", #prayer_name),
                 prayer_text,
             },
@@ -39,7 +47,7 @@ function M.start_chaplet(message_type)
             {
                 title = "Chaplet",
                 render = "default",
-                timeout = false,
+                timeout = timeout,
                 on_open = function(win)
                     current_win = win
                     is_closed = false
@@ -77,15 +85,10 @@ function M.start_chaplet(message_type)
                         vim.api.nvim_win_close(win, true)
                         is_closed = true
                         prayer_index = prayer_index + 1
+                        show_next_prayer()
                     end, { buffer = buf, silent = true })
-                    vim.defer_fn(function()
-                        if not is_closed and vim.api.nvim_win_is_valid(win) then
-                            vim.api.nvim_win_close(win, true)
-                            prayer_index = prayer_index + 1
-                            show_next_prayer()
-                        end
-                    end, 20000)
                 end,
+
                 window = {
                     border = "rounded",
                     focusable = true,
@@ -95,8 +98,31 @@ function M.start_chaplet(message_type)
             }
         )
     end
-    for _, prayer_name in ipairs(chaplet.rosary.order) do
+
+    if manual_only then
         show_next_prayer()
+    else
+        local function schedule_next_prayer()
+            -- First show the current prayer
+            show_next_prayer()
+
+            -- After the display_time, close the window and schedule the next prayer
+            vim.defer_fn(function()
+                if current_win and vim.api.nvim_win_is_valid(current_win) then
+                    vim.api.nvim_win_close(current_win, true)
+                end
+                -- Only schedule next prayer if not manually closed
+                if not is_closed then
+                    prayer_index = prayer_index + 1
+                    -- Wait time_between before showing next prayer
+                    vim.defer_fn(function()
+                        schedule_next_prayer()
+                    end, config.time_between)
+                end
+            end, config.display_time)
+        end
+
+        schedule_next_prayer()
     end
 end
 
