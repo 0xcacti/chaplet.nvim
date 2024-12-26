@@ -11,6 +11,9 @@ end
 M.state = nil
 
 local function pause()
+    if M.state and M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
+        vim.api.nvim_win_close(M.state.win, true)
+    end
 end
 
 local function resume()
@@ -27,55 +30,54 @@ local function expand()
 end
 
 local function terminate()
-    if M.state and M.state.win then
-        if vim.api.nvim_win_is_valid(M.state.win) then
-            vim.api.nvim_win_close(M.state.win, true)
-        end
-
-        if config.manual_only then
-            M.state.prayer_index = M.state.prayer_index + 1
-            if M.state.prayer_index <= #M.state.prayer_order then
-                M.state.show_next_prayer()
-            else
-                M.state = nil
-            end
-        end
+    if M.state and M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
+        vim.api.nvim_win_close(M.state.win, true)
     end
+    M.state = nil
 end
 
 local function toggle_focus()
+    local current_win = vim.api.nvim_get_current_win()
     if M.state and M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
-        vim.api.nvim_set_current_win(M.state.win)
+        if current_win == M.state.win then
+            vim.api.nvim_set_current_win(M.state.main_win)
+        else
+            vim.api.nvim_set_current_win(M.state.win)
+        end
     end
 end
 
+-- handle edge cases
+local function previous()
+    if M.state then
+        if M.state.prayer_index > 1 then
+            if M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
+                vim.api.nvim_win_close(M.state.win, true)
+            end
+            M.state.prayer_index = M.state.prayer_index - 1
+            M.state.show_next_prayer()
+        end
+    end
+end
 
 local function next()
     if M.state then
+        if M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
+            vim.api.nvim_win_close(M.state.win, true)
+        end
+
         M.state.prayer_index = M.state.prayer_index + 1
+
         if M.state.prayer_index > #M.state.prayer_order then
             M.state = nil
-            return false
-        end
-        return true
-    end
-    return false
-end
-
-local function previous()
-end
-
-
-local function next_prayer()
-    if M.state then
-        close_window()
-        if advance_prayer() then
-            M.state.show_next_prayer()
         else
-            notify("Chaplet completed", "info")
+            M.state.show_next_prayer()
         end
     end
 end
+
+
+
 
 function M.start_chaplet(message_type)
     if M.state and M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
@@ -91,6 +93,7 @@ function M.start_chaplet(message_type)
     end
 
     M.state = {
+        main_win = vim.api.nvim_get_current_win(),
         win = nil,
         expanded = false,
         collapse_height = 3,
@@ -192,11 +195,11 @@ function M.setup(opts)
 
     vim.api.nvim_create_user_command('ChapletPause', pause, {})
     vim.api.nvim_create_user_command('ChapletResume', resume, {})
-    vim.api.nvim_create_user_command('ChapletNext', next, {})
-    vim.api.nvim_create_user_command('ChapletPrevious', previous, {})
-    vim.api.nvim_create_user_command('ChapletEnd', terminate, {})
-    vim.api.nvim_create_user_command('ChapletToggleFocus', toggle_focus, {})
-    vim.api.nvim_create_user_command('ChapletToggleExpand', pause, {})
+    vim.api.nvim_create_user_command('ChapletNext', next, {})                -- done  I think but needs to be checked with edge cases
+    vim.api.nvim_create_user_command('ChapletPrevious', previous, {})        -- done I think but needs to be checked with edge cases
+    vim.api.nvim_create_user_command('ChapletEnd', terminate, {})            -- done I think but needs to be checked when no notif is displaying
+    vim.api.nvim_create_user_command('ChapletToggleFocus', toggle_focus, {}) -- done
+    vim.api.nvim_create_user_command('ChapletToggleExpand', expand, {})      --done
 end
 
 return M
@@ -226,3 +229,5 @@ return M
 --- End Completely (terminate)
 --- Focus should go to the thing (toggle_focus)
 --- Expand should expand the window to show the prayer (expand)
+---
+--- these commands will handle all moving forward and backwards
