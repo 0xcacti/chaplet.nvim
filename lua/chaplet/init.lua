@@ -8,35 +8,102 @@ if not has_notify then
     notify = vim.notify
 end
 
+M.state = nil
+
+local function expand_window()
+    if M.state and M.state.win then
+        M.state.expanded = not M.state.expanded
+        vim.api.nvim_win_set_height(
+            M.state.win,
+            M.state.expanded and M.state.max_height or M.state.collapse_height
+        )
+    end
+end
+
+local function close_window()
+    if M.state and M.state.win then
+        if vim.api.nvim_win_is_valid(M.state.win) then
+            vim.api.nvim_win_close(M.state.win, true)
+        end
+
+        if config.manual_only then
+            M.state.prayer_index = M.state.prayer_index + 1
+            if M.state.prayer_index <= #M.state.prayer_order then
+                M.state.show_next_prayer()
+            else
+                M.state = nil
+            end
+        end
+    end
+end
+
+local function focus_window()
+    if M.state and M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
+        vim.api.nvim_set_current_win(M.state.win)
+    end
+end
+
+local function advance_prayer()
+    if M.state then
+        M.state.prayer_index = M.state.prayer_index + 1
+        if M.state.prayer_index > #M.state.prayer_order then
+            M.state = nil
+            return false
+        end
+        return true
+    end
+    return false
+end
+
+
+local function next_prayer()
+    if M.state then
+        close_window()
+        if advance_prayer() then
+            M.state.show_next_prayer()
+        else
+            notify("Chaplet completed", "info")
+        end
+    end
+end
+
 function M.start_chaplet(message_type)
+    if M.state and M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
+        M.state = nil
+    end
+
+    M.state = nil
+
     local chaplet = chaplets[message_type]
-    if not chaplet then
+    if not chaplet or not chaplet.order then
         notify("Chaplet not found: " .. message_type, "error")
         return
     end
 
-    local prayer_order = chaplet.order
-    if not prayer_order then
-        notify("Chaplet prayers not found: " .. message_type, "error")
-        return
-    end
+    M.state = {
+        win = nil,
+        expanded = false,
+        collapse_height = 3,
+        max_height = 7,
+        is_active = true,
+        current_win = nil,
+        prayer_index = 1,
+        prayer_order = chaplet.order,
+        timeout = config.display_time,
+    }
 
-    local timeout = config.display_time
-    local manual_only = config.manual_only
-    if manual_only then
-        timeout = false
+    if config.manual_only then
+        M.state.timeout = false
     end
-
-    local current_win = nil
-    local is_closed = false
-    local prayer_index = 1
 
     local function show_next_prayer()
-        if prayer_index > #prayer_order then
+        if not M.state or M.state.prayer_index > #M.state.prayer_order then
             return
         end
-        local prayer_name = prayer_order[prayer_index]
+
+        local prayer_name = M.state.prayer_order[M.state.prayer_index]
         local prayer_text = chaplet.get_prayer_text(prayer_name)
+
         notify(
             {
                 utils.format_prayer_name(prayer_name),
@@ -47,46 +114,13 @@ function M.start_chaplet(message_type)
             {
                 title = "Chaplet",
                 render = "default",
-                timeout = timeout,
+                timeout = M.state.timeout,
                 on_open = function(win)
-                    current_win = win
-                    is_closed = false
-                    local buf = vim.api.nvim_win_get_buf(win)
-
-                    local expanded = false
-                    local collapse_height = 3
-                    local max_height = 7
+                    M.state.win = win
                     vim.api.nvim_win_set_option(win, 'wrap', true)
                     vim.api.nvim_win_set_option(win, 'linebreak', true)
                     vim.api.nvim_win_set_width(win, 50)
-
-                    -- Start collapsed
-                    vim.api.nvim_win_set_height(win, collapse_height)
-
-                    vim.keymap.set('n', '<leader>j', function()
-                        -- Store current window before jumping
-                        current_win = vim.api.nvim_get_current_win()
-                        vim.api.nvim_set_current_win(win)
-
-                        -- Create mapping to jump back (using the same key)
-                        vim.keymap.set('n', '<leader>j', function()
-                            if vim.api.nvim_win_is_valid(current_win) then
-                                vim.api.nvim_set_current_win(current_win)
-                            end
-                        end, { buffer = buf, silent = true })
-                    end, { silent = true })
-
-                    vim.keymap.set('n', 'e', function()
-                        expanded = not expanded
-                        vim.api.nvim_win_set_height(win, expanded and max_height or collapse_height)
-                    end, { buffer = buf, silent = true })
-
-                    vim.keymap.set('n', 'q', function()
-                        vim.api.nvim_win_close(win, true)
-                        is_closed = true
-                        prayer_index = prayer_index + 1
-                        show_next_prayer()
-                    end, { buffer = buf, silent = true })
+                    vim.api.nvim_win_set_height(win, M.state.collapse_height)
                 end,
 
                 window = {
@@ -99,25 +133,33 @@ function M.start_chaplet(message_type)
         )
     end
 
-    if manual_only then
+    M.state.show_next_prayer = show_next_prayer
+
+
+    if config.manual_only then
         show_next_prayer()
     else
         local function schedule_next_prayer()
-            -- First show the current prayer
+            if not M.state then return end -- Check if state still exists
+
             show_next_prayer()
 
-            -- After the display_time, close the window and schedule the next prayer
             vim.defer_fn(function()
-                if current_win and vim.api.nvim_win_is_valid(current_win) then
-                    vim.api.nvim_win_close(current_win, true)
+                if M.state and M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
+                    pcall(vim.api.nvim_win_close, M.state.win, true)
                 end
-                -- Only schedule next prayer if not manually closed
-                if not is_closed then
-                    prayer_index = prayer_index + 1
-                    -- Wait time_between before showing next prayer
-                    vim.defer_fn(function()
-                        schedule_next_prayer()
-                    end, config.time_between)
+
+                if M.state then
+                    M.state.prayer_index = M.state.prayer_index + 1
+                    if M.state.prayer_index > #M.state.prayer_order then
+                        M.state = nil
+                    else
+                        vim.defer_fn(function()
+                            if M.state then -- Check if state still exists
+                                schedule_next_prayer()
+                            end
+                        end, config.time_between)
+                    end
                 end
             end, config.display_time)
         end
@@ -137,6 +179,11 @@ function M.setup(opts)
             return { 'rosary', 'st michael' }
         end
     })
+
+    vim.api.nvim_create_user_command('ChapletToggle', expand_window, {})
+    vim.api.nvim_create_user_command('ChapletClose', close_window, {})
+    vim.api.nvim_create_user_command('ChapletFocus', focus_window, {})
+    vim.api.nvim_create_user_command('ChapletNext', next_prayer, {})
 end
 
 return M

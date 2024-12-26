@@ -1,7 +1,7 @@
 local M = {}
 
 local defaults = {
-    manual_only = false,
+    manual_only = true,
     display_time = 5000, -- 5 seconds
     time_between = 1000, -- 1 second
 }
