@@ -10,7 +10,13 @@ end
 
 M.state = nil
 
-local function expand_window()
+local function pause()
+end
+
+local function resume()
+end
+
+local function expand()
     if M.state and M.state.win then
         M.state.expanded = not M.state.expanded
         vim.api.nvim_win_set_height(
@@ -20,7 +26,7 @@ local function expand_window()
     end
 end
 
-local function close_window()
+local function terminate()
     if M.state and M.state.win then
         if vim.api.nvim_win_is_valid(M.state.win) then
             vim.api.nvim_win_close(M.state.win, true)
@@ -37,13 +43,14 @@ local function close_window()
     end
 end
 
-local function focus_window()
+local function toggle_focus()
     if M.state and M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
         vim.api.nvim_set_current_win(M.state.win)
     end
 end
 
-local function advance_prayer()
+
+local function next()
     if M.state then
         M.state.prayer_index = M.state.prayer_index + 1
         if M.state.prayer_index > #M.state.prayer_order then
@@ -53,6 +60,9 @@ local function advance_prayer()
         return true
     end
     return false
+end
+
+local function previous()
 end
 
 
@@ -180,10 +190,39 @@ function M.setup(opts)
         end
     })
 
-    vim.api.nvim_create_user_command('ChapletToggle', expand_window, {})
-    vim.api.nvim_create_user_command('ChapletClose', close_window, {})
-    vim.api.nvim_create_user_command('ChapletFocus', focus_window, {})
-    vim.api.nvim_create_user_command('ChapletNext', next_prayer, {})
+    vim.api.nvim_create_user_command('ChapletPause', pause, {})
+    vim.api.nvim_create_user_command('ChapletResume', resume, {})
+    vim.api.nvim_create_user_command('ChapletNext', next, {})
+    vim.api.nvim_create_user_command('ChapletPrevious', previous, {})
+    vim.api.nvim_create_user_command('ChapletEnd', terminate, {})
+    vim.api.nvim_create_user_command('ChapletToggleFocus', toggle_focus, {})
+    vim.api.nvim_create_user_command('ChapletToggleExpand', pause, {})
 end
 
 return M
+
+--- I want
+--- Pause and Hide - should close the window keeping track of state (pause)
+--- Open and Continue (either with full time or part time) ; default full time (resume)
+---
+--- Complete and Next - must be hit for manual only, otherwise closes auto styles, (next)
+---         should have manual_with_wait (where it moves only after a certain time even in manual), can be set to 0 for immediate
+---
+--- Get Last Prayer (should accept a count) (previous)
+--- -- Using v:count (defaults to 0 if no count given)
+--          vim.keymap.set('n', '<leader>lsp', function()
+--              for i = 1, math.max(1, vim.v.count) do
+--                  -- Your LSP restart logic here
+--                  vim.cmd('LspRestart')
+--              end
+--          end)
+--
+--          -- Using v:count1 (defaults to 1 if no count given)
+--          vim.keymap.set('n', '<leader>lsp', function()
+--              for i = 1, vim.v.count1 do
+--                  vim.cmd('LspRestart')
+--              end
+--          end)
+--- End Completely (terminate)
+--- Focus should go to the thing (toggle_focus)
+--- Expand should expand the window to show the prayer (expand)
