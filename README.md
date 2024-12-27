@@ -40,6 +40,8 @@ including the Holy Rosary, Divine Mercy Chaplet, and others, right within your N
 
 ### Configuration
 
+
+
 ### Contributing
 
 Contributions are welcome! Please open a pull request or issue to get started.
