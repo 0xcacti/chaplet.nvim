@@ -34,6 +34,9 @@ including the Holy Rosary, Divine Mercy Chaplet, and others, right within your N
 
 ### Installation
 
+Installing with Packer
+Installing with Lazy
+
 #### Requirementns 
 - This plugin requires Neovim 0.8 or higher
 - nvim-notify
