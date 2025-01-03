@@ -12,7 +12,7 @@ describe("rosary tests", function()
         }
 
         for i, prayer_name in ipairs(expected_opening) do
-            assert.equals(prayer_name, rosary.rosary.order[i])
+            assert.equals(prayer_name, rosary.order[i])
         end
     end)
 
@@ -28,19 +28,19 @@ describe("rosary tests", function()
 
         -- Test first decade
         for i, prayer_name in ipairs(expected_decade) do
-            assert.equals(prayer_name, rosary.rosary.order[decade_start + i - 1])
+            assert.equals(prayer_name, rosary.order[decade_start + i - 1])
         end
     end)
 
     it("should have correct number of decades", function()
-        local decade_length = 13                         -- our father + 10 hail marys + glory be + fatima prayer
+        local decade_length = 13                  -- our father + 10 hail marys + glory be + fatima prayer
         local decades_count = 0
-        local start_index = 7                            -- after opening prayers
+        local start_index = 7                     -- after opening prayers
 
-        for i = start_index, #rosary.rosary.order - 2 do -- -2 for closing prayers
-            if rosary.rosary.order[i] == "our_father" and
-                rosary.rosary.order[i + 11] == "glory_be" and
-                rosary.rosary.order[i + 12] == "fatima_prayer" then
+        for i = start_index, #rosary.order - 2 do -- -2 for closing prayers
+            if rosary.order[i] == "our_father" and
+                rosary.order[i + 11] == "glory_be" and
+                rosary.order[i + 12] == "fatima_prayer" then
                 decades_count = decades_count + 1
             end
         end
@@ -49,9 +49,9 @@ describe("rosary tests", function()
     end)
 
     it("should have correct closing prayers", function()
-        local order_length = #rosary.rosary.order
-        assert.equals("hail_holy_queen", rosary.rosary.order[order_length - 1])
-        assert.equals("rosary_prayer", rosary.rosary.order[order_length])
+        local order_length = #rosary.order
+        assert.equals("hail_holy_queen", rosary.order[order_length - 1])
+        assert.equals("rosary_prayer", rosary.order[order_length])
     end)
 
     it("should have correct total length", function()
@@ -60,11 +60,11 @@ describe("rosary tests", function()
             (13 * 5) + -- 5 decades * (1 our father + 10 hail marys + 1 glory be + 1 fatima prayer)
             2          -- closing prayers
 
-        assert.equals(expected_length, #rosary.rosary.order)
+        assert.equals(expected_length, #rosary.order)
     end)
 
     it("should return valid prayer text for each prayer in order", function()
-        for _, prayer_name in ipairs(rosary.rosary.order) do
+        for _, prayer_name in ipairs(rosary.order) do
             local success, result = pcall(function()
                 return rosary.get_prayer_text(prayer_name)
             end)
