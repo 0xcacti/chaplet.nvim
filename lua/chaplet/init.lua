@@ -31,7 +31,9 @@ local function pause()
 
         if M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
             vim.api.nvim_win_close(M.state.win, true)
-            M.state.prayer_index = M.state.prayer_index - 1
+            if M.state.prayer_index > 1 then
+                M.state.prayer_index = M.state.prayer_index - 1
+            end
         end
     end
 end
