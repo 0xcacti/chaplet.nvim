@@ -1,13 +1,13 @@
-local M = {}
-
-local defaults = {
+local M = {
     manual_only = false,
     display_time = 60000,
     time_between = 360000,
 }
 
 function M.setup(opts)
-    M = vim.tbl_deep_extend("force", defaults, opts or {})
+    for k, v in pairs(opts or {}) do
+        M[k] = v
+    end
 end
 
 return M
