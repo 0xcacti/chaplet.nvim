@@ -70,7 +70,7 @@ display_time                                      *chaplet-config-display_time*
 time_between                                      *chaplet-config-time_between*
     Type: |Number|
     Default: `60000`
-    The waiting time in milliseconds between closing one prayer window and
+    The waiting time in milliseconds between closing one prayer window andmapp
     opening the next one.
 
 manual_only                                       *chaplet-config-manual_only*
@@ -81,8 +81,51 @@ manual_only                                       *chaplet-config-manual_only*
     based on the display_time and time_between settings.
 
 ================================================================================
-MAPPINGS                                                        *chaplet-mappings* 
+MAPPINGS                                                     *chaplet-mappings* 
+
+Chaplet.nvim only provides re-mappings for moving with `k` and `j` inside of the 
+chaplet window.  
+
+    k -> gk     Move up one display line 
+    j -> gj     Move down one display line
+
+These mappings allow for natural navigation through wrapped text in the prayer
+window, treating each displayed line as a separate line for movement purposes,
+rather than moving by actual line breaks. 
+
+All mappings are set with `noremap` and are local to the chaplet window buffer.
+
+
+================================================================================
+RECOMMENDED MAPPINGS                             *chaplet-recomended-mappings* 
+
+Chaplet.nvim does not set any global mappings by default, however, I use the
+following to make it easier to pray while I code.  
+
+>lua
+   vim.keymap.set('n', '<leader>chn', function()
+        for _ = 1, vim.v.count1 do
+            vim.cmd('ChapletNext')
+        end
+    end, { desc = 'Next prayer' })
+    
+    vim.keymap.set('n', '<leader>chp', function()
+        for _ = 1, vim.v.count1 do
+            vim.cmd('ChapletPrevious')
+        end
+    end, { desc = 'Previous prayer' })
+
+    vim.keymap.set('n', '<leader>chf', ':ChapletToggleFocus<CR>', { desc = 'Toggle focus' })
+    vim.keymap.set('n', '<leader>che', ':ChapletToggleExpand<CR>', { desc = 'Toggle expand' })
+    vim.keymap.set('n', '<leader>chq', ':ChapletEnd<CR>', { desc = 'End chaplet' })
+    vim.keymap.set('n', '<leader>chs', ':ChapletPause<CR>', { desc = 'Pause chaplet' })
+
+These mappings use the `<leader>ch` prefix for "chaplet" operations, followed by 
+mnemonic keys. The next/previous mappings (chn/chp) support counts, so you can:
+    • 5chn    Move forward 5 prayers
+    • 3chp    Move backward 3 prayers
+    • chn     Move forward 1 prayer (default)
+<
 
 
 vim:tw=78:ts=8:ft=help:norl:
-

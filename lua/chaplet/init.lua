@@ -153,8 +153,6 @@ function M.show_prayer()
                 local buf = vim.api.nvim_win_get_buf(win)
                 local opts = { buffer = buf, noremap = true, silent = true }
 
-                vim.keymap.set('n', 'h', 'gk', opts)
-                vim.keymap.set('n', 'l', 'gj', opts)
                 vim.keymap.set('n', 'k', 'gk', opts)
                 vim.keymap.set('n', 'j', 'gj', opts)
             end,
