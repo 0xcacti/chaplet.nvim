@@ -1,9 +1,9 @@
 local M = {}
 
 local defaults = {
-    manual_only = true,
+    manual_only = false,
     display_time = 5000, -- 5 seconds
-    time_between = 1000, -- 1 second
+    time_between = 5000, -- 1 second
 }
 
 M = vim.deepcopy(defaults)

@@ -10,18 +10,53 @@ end
 
 M.state = nil
 
+local function clear_timers()
+    if M.state then
+        if M.state.display_timer then
+            vim.fn.timer_stop(M.state.display_timer)
+            M.state.display_timer = nil
+        end
+
+        if M.state.between_timer then
+            vim.fn.timer_stop(M.state.between_timer)
+            M.state.between_timer = nil
+        end
+    end
+end
+
 local function pause()
-    if M.state and M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
-        vim.api.nvim_win_close(M.state.win, true)
+    if M.state then
+        M.state.is_active = false
+        clear_timers()
+
+        if M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
+            vim.api.nvim_win_close(M.state.win, true)
+            M.state.prayer_index = M.state.prayer_index - 1
+        end
     end
 end
 
 local function resume()
+    if M.state then
+        M.state.is_active = true
+        M.show_prayer()
+        if not config.manual_only then
+            M.schedule_prayer()
+        end
+    end
 end
 
 local function expand()
-    if M.state and M.state.win then
+    if M.state and M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
         M.state.expanded = not M.state.expanded
+        if M.state.expanded then -- we just expanded
+            clear_timers()
+        else
+            if not config.manual_only then
+                M.schedule_prayer()
+            end
+        end
+
         vim.api.nvim_win_set_height(
             M.state.win,
             M.state.expanded and M.state.max_height or M.state.collapse_height
@@ -30,6 +65,7 @@ local function expand()
 end
 
 local function terminate()
+    clear_timers()
     if M.state and M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
         vim.api.nvim_win_close(M.state.win, true)
     end
@@ -47,37 +83,105 @@ local function toggle_focus()
     end
 end
 
--- handle edge cases
 local function previous()
-    if M.state then
-        if M.state.prayer_index > 1 then
-            if M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
-                vim.api.nvim_win_close(M.state.win, true)
-            end
-            M.state.prayer_index = M.state.prayer_index - 1
-            M.state.show_next_prayer()
+    if M.state and M.state.prayer_index > 1 then
+        if M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
+            vim.api.nvim_win_close(M.state.win, true)
+        end
+
+        M.state.prayer_index = M.state.prayer_index - 1
+
+        M.show_prayer()
+        if not config.manual_only then
+            M.schedule_prayer()
         end
     end
 end
 
 local function next()
     if M.state then
+        clear_timers()
+
         if M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
             vim.api.nvim_win_close(M.state.win, true)
         end
 
         M.state.prayer_index = M.state.prayer_index + 1
 
-        if M.state.prayer_index > #M.state.prayer_order then
+        if M.state.prayer_index > #M.state.chaplet.order then
             M.state = nil
         else
-            M.state.show_next_prayer()
+            M.show_prayer()
+            if not config.manual_only then
+                M.schedule_prayer()
+            end
         end
     end
 end
 
+function M.show_prayer()
+    if not M.state or not M.state.is_active or M.state.prayer_index > #M.state.chaplet.order then
+        return
+    end
 
+    local prayer_name = M.state.chaplet.order[M.state.prayer_index]
+    local prayer_text = M.state.chaplet.get_prayer_text(prayer_name)
 
+    notify(
+        {
+            utils.format_prayer_name(prayer_name),
+            string.rep("-", #prayer_name),
+            prayer_text,
+        },
+        "info",
+        {
+            title = "Chaplet",
+            render = "default",
+            timeout = false,
+            on_open = function(win)
+                M.state.win = win
+                vim.api.nvim_win_set_option(win, 'wrap', true)
+                vim.api.nvim_win_set_option(win, 'linebreak', true)
+                vim.api.nvim_win_set_option(win, 'list', false)
+                vim.api.nvim_win_set_option(win, 'breakindent', true) -- Preserve indentation when wrapping
+                vim.api.nvim_win_set_width(win, 50)
+                vim.api.nvim_win_set_height(win, M.state.collapse_height)
+
+                local buf = vim.api.nvim_win_get_buf(win)
+                local opts = { buffer = buf, noremap = true, silent = true }
+
+                vim.keymap.set('n', 'h', 'gk', opts)
+                vim.keymap.set('n', 'l', 'gj', opts)
+                vim.keymap.set('n', 'k', 'gk', opts)
+                vim.keymap.set('n', 'j', 'gj', opts)
+            end,
+
+            window = {
+                border = "rounded",
+                focusable = true,
+                width = 50,
+                max_width = 50,
+            }
+        }
+    )
+end
+
+function M.schedule_prayer()
+    if not M.state or not M.state.is_active then return end
+    clear_timers()
+
+    M.state.display_timer = vim.fn.timer_start(config.display_time, function()
+        if M.state and M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
+            vim.api.nvim_win_close(M.state.win, true)
+        end
+    end)
+
+    M.state.between_timer = vim.fn.timer_start(config.display_time + config.time_between, function()
+        if M.state and M.state.is_active then
+            next()
+        end
+    end)
+end
 
 function M.start_chaplet(message_type)
     if M.state and M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
@@ -93,91 +197,27 @@ function M.start_chaplet(message_type)
     end
 
     M.state = {
+        -- window management
         main_win = vim.api.nvim_get_current_win(),
         win = nil,
+        current_win = nil,
         expanded = false,
         collapse_height = 3,
         max_height = 7,
+
+        -- timers
+        display_timer = nil,
+        between_timer = nil,
+
+        -- prayer state
         is_active = true,
-        current_win = nil,
         prayer_index = 1,
-        prayer_order = chaplet.order,
-        timeout = config.display_time,
+        chaplet = chaplet,
     }
 
-    if config.manual_only then
-        M.state.timeout = false
-    end
-
-    local function show_next_prayer()
-        if not M.state or M.state.prayer_index > #M.state.prayer_order then
-            return
-        end
-
-        local prayer_name = M.state.prayer_order[M.state.prayer_index]
-        local prayer_text = chaplet.get_prayer_text(prayer_name)
-
-        notify(
-            {
-                utils.format_prayer_name(prayer_name),
-                string.rep("-", #prayer_name),
-                prayer_text,
-            },
-            "info",
-            {
-                title = "Chaplet",
-                render = "default",
-                timeout = M.state.timeout,
-                on_open = function(win)
-                    M.state.win = win
-                    vim.api.nvim_win_set_option(win, 'wrap', true)
-                    vim.api.nvim_win_set_option(win, 'linebreak', true)
-                    vim.api.nvim_win_set_width(win, 50)
-                    vim.api.nvim_win_set_height(win, M.state.collapse_height)
-                end,
-
-                window = {
-                    border = "rounded",
-                    focusable = true,
-                    width = 50,
-                    max_width = 50,
-                }
-            }
-        )
-    end
-
-    M.state.show_next_prayer = show_next_prayer
-
-
-    if config.manual_only then
-        show_next_prayer()
-    else
-        local function schedule_next_prayer()
-            if not M.state then return end -- Check if state still exists
-
-            show_next_prayer()
-
-            vim.defer_fn(function()
-                if M.state and M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
-                    pcall(vim.api.nvim_win_close, M.state.win, true)
-                end
-
-                if M.state then
-                    M.state.prayer_index = M.state.prayer_index + 1
-                    if M.state.prayer_index > #M.state.prayer_order then
-                        M.state = nil
-                    else
-                        vim.defer_fn(function()
-                            if M.state then -- Check if state still exists
-                                schedule_next_prayer()
-                            end
-                        end, config.time_between)
-                    end
-                end
-            end, config.display_time)
-        end
-
-        schedule_next_prayer()
+    M.show_prayer()
+    if not config.manual_only then
+        M.schedule_prayer()
     end
 end
 
@@ -195,22 +235,15 @@ function M.setup(opts)
 
     vim.api.nvim_create_user_command('ChapletPause', pause, {})
     vim.api.nvim_create_user_command('ChapletResume', resume, {})
-    vim.api.nvim_create_user_command('ChapletNext', next, {})                -- done  I think but needs to be checked with edge cases
-    vim.api.nvim_create_user_command('ChapletPrevious', previous, {})        -- done I think but needs to be checked with edge cases
-    vim.api.nvim_create_user_command('ChapletEnd', terminate, {})            -- done I think but needs to be checked when no notif is displaying
-    vim.api.nvim_create_user_command('ChapletToggleFocus', toggle_focus, {}) -- done
-    vim.api.nvim_create_user_command('ChapletToggleExpand', expand, {})      --done
+    vim.api.nvim_create_user_command('ChapletNext', next, {})
+    vim.api.nvim_create_user_command('ChapletPrevious', previous, {})
+    vim.api.nvim_create_user_command('ChapletEnd', terminate, {})
+    vim.api.nvim_create_user_command('ChapletToggleFocus', toggle_focus, {})
+    vim.api.nvim_create_user_command('ChapletToggleExpand', expand, {})
 end
 
 return M
 
---- I want
---- Pause and Hide - should close the window keeping track of state (pause)
---- Open and Continue (either with full time or part time) ; default full time (resume)
----
---- Complete and Next - must be hit for manual only, otherwise closes auto styles, (next)
----         should have manual_with_wait (where it moves only after a certain time even in manual), can be set to 0 for immediate
----
 --- Get Last Prayer (should accept a count) (previous)
 --- -- Using v:count (defaults to 0 if no count given)
 --          vim.keymap.set('n', '<leader>lsp', function()
@@ -226,8 +259,3 @@ return M
 --                  vim.cmd('LspRestart')
 --              end
 --          end)
---- End Completely (terminate)
---- Focus should go to the thing (toggle_focus)
---- Expand should expand the window to show the prayer (expand)
----
---- these commands will handle all moving forward and backwards
