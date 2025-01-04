@@ -50,7 +50,8 @@ return {
 
     archangels_salutation = (
         "By the intercession of St. Michael and the celestial Choir of Archangels may " ..
-        "the Lord give us perseverance in faith and in all good works in order that we may attain the glory of Heaven. " ..
+        "the Lord give us perseverance in faith and in all good " ..
+        "works in order that we may attain the glory of Heaven. " ..
         "Amen."
     ),
 

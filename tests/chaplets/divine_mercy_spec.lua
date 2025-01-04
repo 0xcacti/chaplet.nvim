@@ -34,7 +34,6 @@ describe("divine mercy tests", function()
     end)
 
     it("should have correct number of decades", function()
-        local decade_length = 13                        -- our father + 10 hail marys + glory be + fatima prayer
         local decades_count = 0
         local start_index = 8                           -- after opening prayers
 

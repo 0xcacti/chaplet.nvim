@@ -6,7 +6,9 @@ local defaults = {
     time_between = 5000, -- 1 second
 }
 
-M = vim.deepcopy(defaults)
+for k, v in pairs(defaults) do
+    M[k] = v
+end
 
 function M.setup(opts)
     M = vim.tbl_deep_extend("force", defaults, opts or {})

@@ -10,7 +10,7 @@ describe("chaplet", function()
         assert.is_nil(chaplet.state)
         chaplet.start_chaplet("rosary")
         assert.is_not_nil(chaplet.state)
-        state = chaplet.state
+        local state = chaplet.state
         assert.are.equals(state.prayer_index, 1)
         assert.are.equals(state.is_active, true)
     end)
@@ -47,7 +47,7 @@ describe("chaplet", function()
         vim.wait(10)
         assert.are.equals(chaplet.state.prayer_index, 2)
 
-        for i = 1, 72 do
+        for _ = 1, 72 do
             vim.cmd("ChapletNext")
             vim.wait(10)
         end

@@ -64,7 +64,7 @@ local function create_order()
         table.insert(order, prayer)
     end
 
-    for i = 1, 4 do
+    for _ = 1, 4 do
         table.insert(order, "our_father")
     end
 
