@@ -29,7 +29,7 @@
 Chaplet.nvim is inspired by Saint Paul's call to constant prayer. 
 
 The plugin provides a gentle, non-intrusive way to pray traditional Catholic chaplets,
-including the Holy Rosary, Divine Mercy Chaplet, and others, right within your Neovim environment. 
+including the Holy Rosary, the Divine Mercy Chaplet, and others, right within your Neovim environment. 
 
 
 ### Installation

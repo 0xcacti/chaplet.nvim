@@ -1,0 +1,88 @@
+================================================================================
+INTRODUCTION                                                    *chaplet.nvim* 
+
+
+Chaplet.nvim provides a non-intrusive way to pray traditional Catholic 
+chaplets, including the Holy Rosary, the Divine Mercy Chaplet, and others, 
+right within your Neovim environment. 
+
+
+================================================================================
+COMMANDS                                                        *chaplet-commands* 
+
+:Chaplet {chaplet}                                              *:Chaplet* *chaplet-start*
+    Start a new chaplet. The {chaplet} argument is the name of the prayer
+    sequence to be prayed. The available chaplets are:
+    - 'rosary': The Holy Rosary
+    - 'divine_mercy': The Divine Mercy Chaplet
+    - 'st_michael': The St. Michael Chaplet
+
+:ChapletPause                                                  *:ChapletPause*
+    Pause the current chaplet sequence, closing the window.
+
+:ChapletResume                                                 *:ChapletResume*
+    Resume the current chaplet sequence, displaying the next 
+    prayer if the chaplet was paused between prayers and otherwise 
+    displaying the previously open prayer.
+
+:ChapletNext                                                   *:ChapletNext*
+    Advance to the next prayer in the sequence.
+
+:ChapletPrevious                                               *:ChapletPrevious*
+    Return to the previous prayer in the sequence.
+
+:ChapletEnd                                                    *:ChapletEnd*
+    End the chaplet sequence, closing the window. 
+
+:ChapletToggleFocus                                         *:ChapletToggleFocus*
+    Switch the focus from the current window to the chaplet window 
+    and vice versa.
+
+:ChapletToggleExpand                                       *:ChapletToggleExpand*
+    Expand the chaplet window to display the full contents of the prayer.
+
+
+================================================================================
+CONFIG                                                          *chaplet-config* 
+
+Chaplet.nvim is configured through the setup function: 
+
+>lua 
+    require('chaplet').setup({
+        -- Time in milliseconds to display each prayer
+        display_time = 10000, 
+
+        -- Time in milliseconds between each prayer 
+        time_between = 60000, 
+
+        -- If true, prayers will not be displayed on a timer
+        manual_only = false,
+    })
+<
+Options: ~
+
+display_time                                      *chaplet-config-display_time*
+    Type: |Number|
+    Default: `10000`
+    The duration in milliseconds that each prayer will be displayed before
+    automatically advancing to the next one (if manual_only is false).
+
+time_between                                      *chaplet-config-time_between*
+    Type: |Number|
+    Default: `60000`
+    The waiting time in milliseconds between closing one prayer window and
+    opening the next one.
+
+manual_only                                       *chaplet-config-manual_only*
+    Type: |Boolean|
+    Default: `false`
+    When set to `true`, prayers will only advance when manually triggered
+    using |:ChapletNext|. When `false`, prayers will advance automatically
+    based on the display_time and time_between settings.
+
+================================================================================
+MAPPINGS                                                        *chaplet-mappings* 
+
+
+vim:tw=78:ts=8:ft=help:norl:
+

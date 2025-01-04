@@ -232,7 +232,7 @@ function M.setup(opts)
     end, {
         nargs = '?',
         complete = function()
-            return { 'rosary', 'st michael' }
+            return { 'rosary', 'divine_mercy', 'st_michael' }
         end
     })
 
@@ -246,19 +246,3 @@ function M.setup(opts)
 end
 
 return M
-
---- Get Last Prayer (should accept a count) (previous)
---- -- Using v:count (defaults to 0 if no count given)
---          vim.keymap.set('n', '<leader>lsp', function()
---              for i = 1, math.max(1, vim.v.count) do
---                  -- Your LSP restart logic here
---                  vim.cmd('LspRestart')
---              end
---          end)
---
---          -- Using v:count1 (defaults to 1 if no count given)
---          vim.keymap.set('n', '<leader>lsp', function()
---              for i = 1, vim.v.count1 do
---                  vim.cmd('LspRestart')
---              end
---          end)
