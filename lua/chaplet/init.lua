@@ -1,12 +1,8 @@
 local utils = require("chaplet.utils")
 local config = require("chaplet.config")
 local chaplets = require("chaplet.chaplets")
+local notify = require("notify") -- Remove the pcall check
 local M = {}
-
-local has_notify, notify = pcall(require, "notify")
-if not has_notify then
-    notify = vim.notify
-end
 
 M.state = nil
 
