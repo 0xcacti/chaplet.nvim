@@ -1,0 +1,17 @@
+:Chaplet	chaplet.txt	/*:Chaplet*
+:ChapletEnd	chaplet.txt	/*:ChapletEnd*
+:ChapletNext	chaplet.txt	/*:ChapletNext*
+:ChapletPause	chaplet.txt	/*:ChapletPause*
+:ChapletPrevious	chaplet.txt	/*:ChapletPrevious*
+:ChapletResume	chaplet.txt	/*:ChapletResume*
+:ChapletToggleExpand	chaplet.txt	/*:ChapletToggleExpand*
+:ChapletToggleFocus	chaplet.txt	/*:ChapletToggleFocus*
+chaplet	chaplet.txt	/*chaplet*
+chaplet-commands	chaplet.txt	/*chaplet-commands*
+chaplet-config	chaplet.txt	/*chaplet-config*
+chaplet-config-display_time	chaplet.txt	/*chaplet-config-display_time*
+chaplet-config-manual_only	chaplet.txt	/*chaplet-config-manual_only*
+chaplet-config-time_between	chaplet.txt	/*chaplet-config-time_between*
+chaplet-mappings	chaplet.txt	/*chaplet-mappings*
+chaplet-recomended-mappings	chaplet.txt	/*chaplet-recomended-mappings*
+chaplet.nvim	chaplet.txt	/*chaplet.nvim*

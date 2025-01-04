@@ -185,8 +185,8 @@ function M.schedule_prayer()
 end
 
 function M.start_chaplet(message_type)
-    if M.state and M.state.win and vim.api.nvim_win_is_valid(M.state.win) then
-        M.state = nil
+    if M.state then
+        terminate()
     end
 
     M.state = nil
