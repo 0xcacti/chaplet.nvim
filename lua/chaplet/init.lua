@@ -55,6 +55,7 @@ local function expand()
             if not config.manual_only then
                 M.schedule_prayer()
             end
+            vim.api.nvim_win_set_cursor(M.state.win, { 1, 0 })
         end
 
         vim.api.nvim_win_set_height(
