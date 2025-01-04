@@ -1,7 +1,7 @@
 local M = {
     manual_only = false,
     display_time = 60000,
-    time_between = 360000,
+    time_between = 300000,
 }
 
 function M.setup(opts)

@@ -1,7 +1,7 @@
 local utils = require("chaplet.utils")
 local config = require("chaplet.config")
 local chaplets = require("chaplet.chaplets")
-local notify = require("notify") -- Remove the pcall check
+local notify = require("notify")
 local M = {}
 
 M.state = nil
@@ -186,6 +186,8 @@ function M.start_chaplet(message_type)
     end
 
     M.state = nil
+
+    message_type = message_type and message_type:match("^%s*(.-)%s*$")
 
     local chaplet = chaplets[message_type]
     if not chaplet or not chaplet.order then
