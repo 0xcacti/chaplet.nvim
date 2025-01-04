@@ -10,7 +10,7 @@ right within your Neovim environment.
 ================================================================================
 COMMANDS                                                        *chaplet-commands* 
 
-:Chaplet {chaplet}                                              *:Chaplet* *chaplet-start*
+:Chaplet {chaplet}                                              *:Chaplet* *chaplet*
     Start a new chaplet. The {chaplet} argument is the name of the prayer
     sequence to be prayed. The available chaplets are:
     - 'rosary': The Holy Rosary
