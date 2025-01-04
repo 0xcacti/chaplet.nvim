@@ -36,6 +36,7 @@ including the Holy Rosary, the Divine Mercy Chaplet, and others, right within yo
 
 
 <details>
+
 <summary>Packer</summary>
 
 Using [packer.nvim](https://github.com/wbthomason/packer.nvim):
@@ -52,10 +53,15 @@ use {
         })
     end
 }
+
+```
 </details>
 
 <details>
+
 <summary>Lazy</summary>
+
+```lua 
 {
     'turakar/chaplet.nvim',
     dependencies = {
@@ -76,6 +82,8 @@ use {
         "ChapletToggleExpand"
     }
 }
+``` 
+
 </details>
 
 #### Requirementns 
