@@ -2,13 +2,9 @@ local M = {}
 
 local defaults = {
     manual_only = false,
-    display_time = 5000, -- 5 seconds
-    time_between = 5000, -- 1 second
+    display_time = 60000,
+    time_between = 360000,
 }
-
-for k, v in pairs(defaults) do
-    M[k] = v
-end
 
 function M.setup(opts)
     M = vim.tbl_deep_extend("force", defaults, opts or {})
